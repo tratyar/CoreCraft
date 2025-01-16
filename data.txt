@@ -1,0 +1,8 @@
+               tyep lvl    xp   [def  attack  vip] img
+Core_1         core 1 3 10 5 2 core_0.png
+
+               tyep  lvl xp img sell buy
+Armor_1        armor 1 1 armor_0.png 400 500
+
+               tyep  lvl sped_attack/s    bulled_speed p\s     damage    bullet in 1 shot img sell buy
+Machine_gun_1  machine_gun 1 0.8 30 1 1 machine_0.png 600 750
