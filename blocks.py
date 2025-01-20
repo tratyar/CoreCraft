@@ -16,12 +16,13 @@ def load_image(name, colorkey=None):
 class Core(pygame.sprite.Sprite): #ядро
     def __init__(self, *group, args=''):
         super().__init__(*group)
-        self.lvl = args[0]
-        self.xp = args[1]
-        self.defens = args[2]
-        self.attack = args[3]
-        self.vip = args[4]
+        self.lvl = int(args[0])
+        self.xp = int(args[1])
+        self.defens = int(args[2])
+        self.attack = int(args[3])
+        self.vip = int(args[4])
         self.image = load_image('blocks\\' + args[5])
+        self.up = int(args[6])
         self.rect = self.image.get_rect()
         self.rect.x = 0
         self.rect.y = 0
@@ -30,13 +31,15 @@ class Core(pygame.sprite.Sprite): #ядро
 class Machine_gun(pygame.sprite.Sprite): #пулемёт
     def __init__(self, *group, args=''):
         super().__init__(*group)
-        self.lvl = args[0]
-        self.at_sp = args[1]
-        self.bull_sp = args[2]
-        self.dmg = args[3]
-        self.shot = args[4]
+        self.lvl = int(args[0])
+        self.at_sp = int(args[1])
+        self.bull_sp = int(args[2])
+        self.dmg = int(args[3])
+        self.shot = int(args[4])
         self.image = load_image('blocks\\' + args[5])
-        self.sell = args[7]
+        self.sell = int(args[6])
+        self.buy = int(args[7])
+        self.up = int(args[8])
         self.rect = self.image.get_rect()
         self.rect.x = 0
         self.rect.y = 0
@@ -45,10 +48,12 @@ class Machine_gun(pygame.sprite.Sprite): #пулемёт
 class Armor(pygame.sprite.Sprite): #броня
     def __init__(self, *group, args=''):
         super().__init__(*group)
-        self.lvl = args[0]
-        self.xp = args[1]
+        self.lvl = int(args[0])
+        self.xp = int(args[1])
         self.image = load_image('blocks\\' + args[2])
-        self.sell = args[3]
+        self.sell = int(args[3])
+        self.buy = int(args[4])
+        self.up = int(args[5])
         self.rect = self.image.get_rect()
         self.rect.x = 0
         self.rect.y = 0
