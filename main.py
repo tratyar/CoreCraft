@@ -159,6 +159,7 @@ if __name__ == '__main__':
             if not ship_editor.shop.shop_item.flag:
                 mode = 'menu'
         elif mode == 'play':
+            waave = 0
             level, player_rect = play_mode(screen, events), play_mode(screen, events)  # Переход в режим игры
             if level:
                 mode = level.lower()
@@ -178,19 +179,20 @@ if __name__ == '__main__':
 
         # Логика для уровней
         elif mode.startswith('lvl'):
+            current_level = int(mode.split(' ')[1])  # Получаем номер текущего уровня
+
             #столкновения
             for el in enemies:
                 atk = pygame.sprite.groupcollide(el.bullets, ship_editor.board.test.moduls, True, False)
                 for i in atk:
                     my_ship.xp -= 1
-
             for i in my_ship.canon:
                 atk = pygame.sprite.groupcollide(enemies, i.bullets, False, True)
                 if atk:
                     for j in atk:
                         for b in atk[j]:
-                            print(b.dmg)
                             j.take_damage(b.dmg)
+
             #отрисовка
             ship_editor.board.test.moduls.update()
             ship_editor.board.test.moduls.draw(screen)
@@ -202,16 +204,15 @@ if __name__ == '__main__':
 
             if kk == 0:
                 kk = 1
+            # Переход на следующий уровень, если все враги уничтожены
+            if len(enemies) == 0:
+                if waave < 3:
+                    waave += 1
+                    mode = f'lvl {current_level}'
+                else:
+                    mode = 'play'  # Возвращаемся в меню после завершения всех уровней
+
             if len(enemies) == 0:  # Если врагов нет, создаем врагов для текущего уровня
-                current_level = int(mode.split(' ')[1])  # Получаем номер текущего уровня
-                if current_level == 1:
-                    total_enemies = 3
-                elif current_level == 2:
-                    total_enemies = 5
-                elif current_level == 3:
-                    total_enemies = 6
-                elif current_level == 4:
-                    total_enemies = 7
                 if current_level == 1:
                     if waave == 1:
                         enemy1 = T_0(enemies, index=0, total_enemies=1, level=1, max_health=300 * kk)
@@ -266,23 +267,8 @@ if __name__ == '__main__':
                         enemy7 = T_0(enemies, index=6, total_enemies=7, level=4, max_health=300 * kk)
                     if waave == 2:
                         enemy1 = boss(enemies, index=0, total_enemies=1, level=4, max_health=5000 * kk)
-
             enemies.update(player_rect)
             enemies.draw(screen)
-            # Переход на следующий уровень, если все враги уничтожены
-            if len(enemies) == 0:
-                if waave < 3:
-                    waave += 1
-                    mode = f'lvl {current_level}'
-                else:
-                    mode = 'menu'  # Возвращаемся в меню после завершения всех уровней
-
-            # Переход на следующий уровень, если все враги уничтожены
-            if len(enemies) == 0:
-                if current_level < 4:
-                    mode = f'lvl {current_level + 1}'
-                else:
-                    mode = 'menu'  # Возвращаемся в меню после завершения всех уровней
         clock.tick(fps)
         pygame.display.flip()
     save_info()

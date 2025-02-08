@@ -22,4 +22,4 @@ Shot_gun_2     shot_gun 2 2.5 8 2 5 shot_gun_1.png 1200 0 1125
 Shot_gun_3     shot_gun 3 2 8 2 5 shot_gun_2.png 2400 0 1900
 Shot_gun_4     shot_gun 4 2 10 4 7 shot_gun_3.png 4500 0 3000
 Shot_gun_5     shot_gun 5 1.5 10 4 7 shot_gun_4.png 7000 0 5000
-Shot_gun_6     shot_gun 6 1.2 10 8 9 shot_gun_5.png 11000 0 0
+Shot_gun_6     shot_gun 6 1.2 10 800 9 shot_gun_5.png 11000 0 0

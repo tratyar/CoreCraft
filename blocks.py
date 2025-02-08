@@ -189,9 +189,9 @@ class Shot_gun(pygame.sprite.Sprite):
         bullet = Bullet_shot_gun(self.rect.x + 7, self.rect.bottom - 10, self.bull_sp, 0, self.dmg)
         self.bullets.add(bullet)
         for i in range(1, self.shots_in_shot // 2 + 1):
-            bullet = Bullet_shot_gun(self.rect.x + 7, self.rect.bottom - 10, self.bull_sp, i, self.dmg)
+            bullet = Bullet_shot_gun(self.rect.x + 7, self.rect.bottom - 10, self.bull_sp - i // 2, i, self.dmg)
             self.bullets.add(bullet)
-            bullet = Bullet_shot_gun(self.rect.x + 7, self.rect.bottom - 10, self.bull_sp, -i, self.dmg)
+            bullet = Bullet_shot_gun(self.rect.x + 7, self.rect.bottom - 10, self.bull_sp - i // 2, -i, self.dmg)
             self.bullets.add(bullet)
 
 
