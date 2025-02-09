@@ -85,6 +85,7 @@ class Main_bottons(pygame.sprite.Sprite): #класс для работы кно
             if args and args[0].type == pygame.MOUSEBUTTONDOWN and self.editRect.collidepoint(args[0].pos):
                 mode = 'edit'
                 init_ship(editor.board)
+                ship_editor.board.load_bord()
                 ship_editor.shop.shop_item.flag = True  # флаг для выхода
                 ship_editor.shop.shop_item.aktiv_block = None  # флаг для сброса активного блока
         else:
@@ -139,6 +140,7 @@ if __name__ == '__main__':
     # Добавляем группу для врагов
     enemies = pygame.sprite.Group()
     waave = 0
+    type_ship = 0
     settings_buttons = SettingsButtons()
     difficulty = "normal"  # По умолчанию сложность "Нормально"
     while running:
@@ -169,7 +171,7 @@ if __name__ == '__main__':
             if result in ["easy", "normal", "hard"]:
                 difficulty = result
                 if difficulty == "easy":
-                    kk = 0.5
+                    kk = 0.75
                 if difficulty == "normal":
                     kk = 1
                 if difficulty == "hard":
@@ -215,14 +217,14 @@ if __name__ == '__main__':
             if len(enemies) == 0:  # Если врагов нет, создаем врагов для текущего уровня
                 if current_level == 1:
                     if waave == 1:
-                        enemy1 = T_0(enemies, index=0, total_enemies=1, level=1, max_health=300 * kk)
+                        enemy1 = T_0(enemies, index=0, total_enemies=1, level=1, max_health=50 * kk)
                     if waave == 2:
-                        enemy1 = T_0(enemies, index=0, total_enemies=2, level=1, max_health=300 * kk)
-                        enemy2 = T_0(enemies, index=1, total_enemies=2, level=1, max_health=300 * kk)
+                        enemy1 = T_0(enemies, index=0, total_enemies=2, level=1, max_health=50 * kk)
+                        enemy2 = T_0(enemies, index=1, total_enemies=2, level=1, max_health=50 * kk)
                     if waave == 3:
-                        enemy1 = T_0(enemies, index=0, total_enemies=3, level=1, max_health=300 * kk)
-                        enemy2 = T_1(enemies, index=1, total_enemies=3, level=1, max_health=500 * kk)
-                        enemy3 = T_0(enemies, index=2, total_enemies=3, level=1, max_health=300 * kk)
+                        enemy1 = T_0(enemies, index=0, total_enemies=3, level=1, max_health=50 * kk)
+                        enemy2 = T_1(enemies, index=1, total_enemies=3, level=1, max_health=200 * kk)
+                        enemy3 = T_0(enemies, index=2, total_enemies=3, level=1, max_health=50 * kk)
                 if current_level == 2:
                     if waave == 1:
                         enemy1 = T_1(enemies, index=0, total_enemies=2, level=2, max_health=500 * kk)
