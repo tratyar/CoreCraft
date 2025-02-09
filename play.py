@@ -2,6 +2,8 @@ import pygame
 
 
 def play_mode(screen, events):
+    global g
+    g = ''
     button_pressed = False
     show_popup = None  # Изначально нет всплывающего окна
 

@@ -219,6 +219,74 @@ class Bullet_shot_gun(pygame.sprite.Sprite):
             self.kill()
 
 
+class Laser(pygame.sprite.Sprite):
+    def __init__(self, y, x, *group, args=''):
+        super().__init__(*group)
+        self.lvl = int(args[0])
+        self.bull_sp = int(args[2])
+        self.dmg = int(args[3])
+        self.shots_in_shot = int(args[4])
+        self.image = load_image('blocks\\' + args[5])
+        self.batl_im = batl_im(self.image)
+        self.sell = int(args[6])
+        self.buy = int(args[7])
+        self.up = int(args[8])
+        self.rect = self.image.get_rect()
+        self.rect.x = 0
+        self.rect.y = 0
+        self.x = x - 5
+        self.y = y - 5
+        # выстрелы
+        self.bullets = pygame.sprite.Group()
+        self.last_shot = pygame.time.get_ticks()
+        self.at_sp = float(args[1])
+
+    def revers_mod(self):
+        self.image, self.batl_im = self.batl_im, self.image
+
+    def update(self, *args):
+        pos = pygame.mouse.get_pos()
+        self.rect.x = pos[0] + self.x * 15
+        self.rect.y = pos[1] + self.y * 15
+        # стрельба
+        now = pygame.time.get_ticks()
+        if now - self.last_shot > self.at_sp * 500:
+            self.last_shot = now
+            self.shoot()
+
+        self.bullets.update()
+        self.bullets.draw(pygame.display.get_surface())
+
+    def shoot(self):
+        if self.shots_in_shot == 1:
+            bullet = Bullet_Laser(self.rect.x + 6, self.rect.bottom - 50, self.dmg)
+            self.bullets.add(bullet)
+        if self.shots_in_shot == 2:
+            bullet = Bullet_Laser(self.rect.x + 1, self.rect.bottom - 50, self.dmg)
+            self.bullets.add(bullet)
+            bullet = Bullet_Laser(self.rect.x + 9, self.rect.bottom - 50, self.dmg)
+            self.bullets.add(bullet)
+
+
+class Bullet_Laser(pygame.sprite.Sprite):
+    def __init__(self, x, y, dmg):
+        super().__init__()
+        s = pygame.Surface((5, y), pygame.SRCALPHA)
+        pygame.draw.rect(s, (255, 255, 255, 60), (0, 0, 5, y), 0)
+        pygame.draw.rect(s, (255, 255, 150), (3, 0, 1, y), 0)
+        self.life = pygame.time.get_ticks()
+        self.dmg = dmg
+        self.image = s
+        self.rect = self.image.get_rect()
+        self.rect.centerx = x
+        self.rect.bottom = y
+
+    def update(self):
+        now = pygame.time.get_ticks()
+        if now - self.life > 20:
+            self.kill()
+
+
 class Test: #класс для определения типа модуля
     def __init__(self):
         self.moduls = pygame.sprite.Group()
@@ -232,5 +300,6 @@ class Test: #класс для определения типа модуля
             return Machine_gun(y, x, self.moduls, args=data[1:])
         if data[0] == 'shot_gun':
             return Shot_gun(y, x, self.moduls, args=data[1:])
-
+        if data[0] == 'laser':
+            return Laser(y, x, self.moduls, args=data[1:])
 

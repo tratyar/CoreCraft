@@ -23,11 +23,6 @@ def load_image(name, colorkey=None):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, *group, index=0, total_enemies=1, level=1, max_health=300):
         super().__init__(*group)
-        global bos
-        if self.enemy_image == 'boss.png':
-            bos = 1
-        else:
-            bos = 0
         self.image = load_image(self.enemy_image, -1)
         self.image = pygame.transform.flip(self.image, False, True)
         self.rect = self.image.get_rect()
@@ -54,8 +49,6 @@ class Enemy(pygame.sprite.Sprite):
         self.health = self.max_health  # Текущее здоровье
 
     def update(self, player_rect):
-
-
         # Движение врага
         self.rect.x += self.horizontal_speed
         self.rect.y += self.vertical_speed
@@ -100,53 +93,107 @@ class Enemy(pygame.sprite.Sprite):
         pygame.draw.rect(pygame.display.get_surface(), (0, 255, 0), (bar_x, bar_y, fill, bar_height))
 
     def shoot(self, player_rect):
-        bullet = Bullet(self.rect.centerx, self.rect.bottom)
-        self.bullets.add(bullet)
+        # Создаем пули в указанных точках спавна
+        for offset in self.bullet_spawn_offsets:
+            bullet = Bullet(self.rect.centerx + offset[0], self.rect.bottom + offset[1])
+            self.bullets.add(bullet)
 
 
 class T_0(Enemy):
     enemy_image = "T_0.png"
     base_speed = 2
     base_shoot_delay = 1200
+    bullet_spawn_offsets = [(0, 0)]  # Одна точка спавна пуль
 
 
 class T_1(Enemy):
     enemy_image = "T_1.png"
     base_speed = 1
     base_shoot_delay = 1000
+    bullet_spawn_offsets = [(-25, -20), (25, -20)]  # Две точки спавна пуль
 
 
 class T_2(Enemy):
     enemy_image = "T_2.png"
     base_speed = 2
-    base_shoot_delay = 800
+    base_shoot_delay = 900
+    bullet_spawn_offsets = [(-20, -60), (20, -60)]  # Две точки спавна пуль
 
 
 class T_3(Enemy):
     enemy_image = "T_3.png"
     base_speed = 1
-    base_shoot_delay = 600
+    base_shoot_delay = 800
+    bullet_spawn_offsets = [(-22, -80), (22, -80)]  # Две точки спавна пуль
 
 
 class boss(Enemy):
     enemy_image = "boss.png"
     base_speed = 2
-    base_shoot_delay = 300
+    base_shoot_delay = 700  # Задержка для обычных снарядов
+    bullet_spawn_offsets = [(-90, -40), (90, -40), (-70, -30), (70, -30), (-75, -30), (75, -30),
+                            (-150, 0), (150, 0), (-160, 0), (160, 0), (200, -50), (-200, -50), (95, -40), (-95, -40),   # Точки спавна пуль красные
+                            (-48, -35), (48, -35), (-55, -35), (55, -35), (-40, -35), (40, -35), (120, 0), (-120, 0),
+                            (-78, -35), (78, -35), (-68, -35), (68, -35)]   # Точки спавна пуль ракет
+
+    def __init__(self, *group, index=0, total_enemies=1, level=1, max_health=5000):
+        super().__init__(*group, index=index, total_enemies=total_enemies, level=level, max_health=max_health)
+        self.blue_bullets = pygame.sprite.Group()  # Группа для синих снарядов
+        self.last_shot = pygame.time.get_ticks()  # Время последнего выстрела
+        self.shoot_delay = 1500  # Задержка между выстрелами (1.5 секунды)
+
+    def update(self, player_rect):
+        super().update(player_rect)  # Вызываем родительский метод для обычной логики
+
+        # Стрельба
+        now = pygame.time.get_ticks()
+        if now - self.last_shot > self.shoot_delay:
+            self.last_shot = now
+            self.shoot(player_rect)
+
+        self.blue_bullets.update()
+        self.blue_bullets.draw(pygame.display.get_surface())
+
+    def shoot(self, player_rect):
+        # Создаем 14 красных пуль
+        for offset in self.bullet_spawn_offsets[:14]:  # Первые шесть точек для красных пуль
+            bullet = Bullet(self.rect.centerx + offset[0], self.rect.bottom + offset[1])
+            self.bullets.add(bullet)
+
+        # Создаем 8 синих пули
+        for offset in self.bullet_spawn_offsets[14:]:  # Последние четыре точки для синих пуль
+            blue_bullet = BlueBullet(self.rect.centerx + offset[0], self.rect.bottom + offset[1])
+            self.blue_bullets.add(blue_bullet)
+
+
 
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = pygame.Surface((4, 10))
-        self.image.fill((255, 0, 0))
+        self.image.fill((255, 0, 0))  # Красный цвет
         self.rect = self.image.get_rect()
-        if bos == 1:
-            self.rect.centerx = x + random.choice([-100, 100])
-            self.rect.bottom = y
-        else:
-            self.rect.centerx = x
-            self.rect.bottom = y
+        self.rect.centerx = x
+        self.rect.bottom = y
         self.speed = 5
+
+    def update(self):
+        self.rect.y += self.speed
+        if self.rect.y > 900:
+            self.kill()
+
+
+class BlueBullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.Surface((6, 12))  # Синий снаряд больше и толще
+        self.image.fill((0, 0, 255))  # Синий цвет
+        self.rect = self.image.get_rect()
+        self.rect.centerx = x
+        self.rect.bottom = y
+        self.speed = 3  # Медленнее обычных снарядов
+        self.damage = 2  # Наносит 2 HP урона
 
     def update(self):
         self.rect.y += self.speed

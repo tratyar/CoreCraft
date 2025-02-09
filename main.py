@@ -125,6 +125,13 @@ class Main_bottons(pygame.sprite.Sprite): #класс для работы кно
 
 
 if __name__ == '__main__':
+    # В начале файла, рядом с другими глобальными переменными
+    unlocked_levels = {"lvl 1": True, "lvl 2": False, "lvl 3": False,
+                       "lvl 4": True}  # По умолчанию открыт только первый уровень
+    wave_text_alpha = 0  # Начальная прозрачность текста
+    wave_text_fade_in = True  # Флаг для появления текста
+    wave_text_fade_out = False  # Флаг для исчезания текста
+    wave_text_surface = None
     kk = 0
     pygame.display.set_caption("CoreCraft")
     screen = pygame.display.set_mode((1200, 900))
@@ -143,6 +150,16 @@ if __name__ == '__main__':
     type_ship = 0
     settings_buttons = SettingsButtons()
     difficulty = "normal"  # По умолчанию сложность "Нормально"
+    # Переменные для задержки между волнами
+    wave_delay = 3000  # Задержка в миллисекундах (3 секунды)
+    wave_start_time = 0
+    show_wave_text = False
+
+    # Переменные для отображения результата игры
+    game_over = False
+    game_result = None  # "win" или "lose"
+    result_display_time = 0
+    result_delay = 3000  # Задержка перед возвращением в меню (3 секунды)
     while running:
         screen.fill((20, 20, 20))
         for event in pygame.event.get():
@@ -183,36 +200,90 @@ if __name__ == '__main__':
         elif mode.startswith('lvl'):
             current_level = int(mode.split(' ')[1])  # Получаем номер текущего уровня
 
-            #столкновения
+            # Столкновения
             for el in enemies:
+                # Обработка столкновений обычных снарядов врагов с модулями корабля игрока
                 atk = pygame.sprite.groupcollide(el.bullets, ship_editor.board.test.moduls, True, False)
                 for i in atk:
-                    my_ship.xp -= 1
-            for i in my_ship.canon:
-                atk = pygame.sprite.groupcollide(enemies, i.bullets, False, True)
-                if atk:
-                    for j in atk:
-                        for b in atk[j]:
-                            j.take_damage(b.dmg)
+                    my_ship.xp -= 1  # Обычные снаряды наносят 1 HP урона
+
+                # Обработка столкновений синих снарядов босса с модулями корабля игрока
+                if isinstance(el, boss):  # Проверяем, что это босс
+                    blue_atk = pygame.sprite.groupcollide(el.blue_bullets, ship_editor.board.test.moduls, True, False)
+                    for i in blue_atk:
+                        my_ship.xp -= 2  # Синие снаряды наносят 2 HP урона
+
+                # Обработка столкновений снарядов игрока с врагами
+                for i in my_ship.canon:
+                    atk = pygame.sprite.groupcollide(enemies, i.bullets, False, True)
+                    if atk:
+                        for j in atk:
+                            for b in atk[j]:
+                                j.take_damage(b.dmg)  # Наносим урон врагу
 
             #отрисовка
             ship_editor.board.test.moduls.update()
             ship_editor.board.test.moduls.draw(screen)
             print_hp(screen)
 
-            #проверка на колво хп
+            # Проверка на количество HP
             if my_ship.xp <= 0:
-                mode = 'play'
+                for enemy in enemies:
+                    enemy.kill()
+                game_over = True
+                game_result = "lose"  # Поражение
+                result_display_time = pygame.time.get_ticks()
 
             if kk == 0:
                 kk = 1
-            # Переход на следующий уровень, если все враги уничтожены
-            if len(enemies) == 0:
-                if waave < 3:
+
+            # Переход на следующую волну, если все враги уничтожены
+            if len(enemies) == 0 and not show_wave_text:
+                if (waave < 3 and current_level < 3) or (waave < 2 and current_level > 2):
                     waave += 1
-                    mode = f'lvl {current_level}'
+                    wave_start_time = pygame.time.get_ticks()  # Запоминаем время начала задержки
+                    show_wave_text = True  # Показываем текст о начале волны
                 else:
-                    mode = 'play'  # Возвращаемся в меню после завершения всех уровней
+                    game_over = True
+                    waave = 0
+                    game_result = "win"  # Победа
+                    result_display_time = pygame.time.get_ticks()
+
+                    # Если идет задержка между волнами
+                    if show_wave_text:
+                        current_time = pygame.time.get_ticks()
+                        if current_time - wave_start_time < wave_delay:
+                            # Создаем поверхность для текста с прозрачностью, если она еще не создана
+
+                            wave_font = pygame.font.Font('media\\fonts\\quantum.otf', 50)
+                            wave_text = wave_font.render(f"Волна {waave}", True, (255, 255, 255))
+                            wave_text_surface = pygame.Surface(wave_text.get_size(), pygame.SRCALPHA)
+                            wave_text_surface.blit(wave_text, (0, 0))  # Рисуем текст на поверхности
+                            wave_text_rect = wave_text_surface.get_rect(center=(600, 450))  # Центрируем текст
+
+                            # Плавное появление текста
+                            if wave_text_fade_in:
+                                wave_text_alpha += 3.9  # Увеличиваем прозрачность
+                                if wave_text_alpha >= 255:
+                                    wave_text_alpha = 255
+                                    wave_text_fade_in = False
+                                    wave_text_fade_out = True  # Начинаем исчезание
+
+                            # Плавное исчезание текста
+                            if wave_text_fade_out:
+                                wave_text_alpha -= 3.9  # Уменьшаем прозрачность
+                                if wave_text_alpha <= 0:
+                                    wave_text_alpha = 0
+                                    wave_text_fade_in = False
+                                    wave_text_fade_out = False
+
+                            # Устанавливаем прозрачность текста и отображаем его
+                            if wave_text_surface:  # Проверяем, что поверхность создана
+                                wave_text_surface.set_alpha(wave_text_alpha)  # Применяем прозрачность
+                                screen.blit(wave_text_surface, wave_text_rect)
+                        else:
+                            wave_text_fade_in = True
+                            show_wave_text = False
 
             if len(enemies) == 0:  # Если врагов нет, создаем врагов для текущего уровня
                 if current_level == 1:
@@ -269,6 +340,34 @@ if __name__ == '__main__':
                         enemy7 = T_0(enemies, index=6, total_enemies=7, level=4, max_health=300 * kk)
                     if waave == 2:
                         enemy1 = boss(enemies, index=0, total_enemies=1, level=4, max_health=5000 * kk)
+
+                    # Отображение результата игры
+                    if game_over:
+                        current_time = pygame.time.get_ticks()
+                        if current_time - result_display_time < result_delay:
+                            # Отображаем текст "Победа" или "Поражение"
+                            result_font = pygame.font.Font('media\\fonts\\quantum.otf', 50)
+                            if game_result == "win":
+                                mode = "win"
+                                if current_level < 4:  # Если это не последний уровень
+                                    next_level = f"lvl {current_level + 1}"  # Следующий уровень
+                                    unlocked_levels[next_level] = True
+                                my_ship.xp = my_ship.max_xp
+                                result_text = result_font.render("Победа!", True, (0, 255, 0))
+                            else:
+                                my_ship.xp = my_ship.max_xp
+                                mode = 'porajenie'
+                                waave = 0
+                                result_text = result_font.render("Поражение!", True, (255, 0, 0))
+                            text_rect = result_text.get_rect(center=(600, 450))
+                            screen.blit(result_text, text_rect)
+                        else:
+                            # Возвращаемся в меню после задержки
+                            for enemy in enemies:
+                                enemy.kill()
+                            game_over = False
+                            mode = 'menu'
+
             enemies.update(player_rect)
             enemies.draw(screen)
         clock.tick(fps)

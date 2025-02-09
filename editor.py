@@ -12,6 +12,13 @@ move = None
 buy = False
 cache = 0
 
+dmg = load_image('dmg.png')
+at_speed = load_image('atk_speed.png')
+speed = load_image('speed.png')
+bullets = load_image('bullets.png')
+xp = load_image('xp.png')
+myfont = pygame.font.Font('media\\fonts\\quantum.otf', 17)
+
 
 def save_info():
     with open('saves.txt', 'r') as f:
@@ -21,6 +28,27 @@ def save_info():
     with open('saves.txt', 'w') as f:
         f.write('\n'.join(list(map(str, data))))
 
+
+def print_stat(block):
+    s = pygame.Surface((200, 100), pygame.SRCALPHA)
+    s.fill((150, 150, 150, 50))
+    pygame.draw.rect(s, (150, 150, 150, 150), (0, 0, 200, 100), 3)
+    if block.__class__.__name__ == 'Armor' or block.__class__.__name__ == 'Core':
+        s.blit(xp, (20, 20))
+        s.blit(myfont.render(f"{block.xp}", 1, '#a6e6ff'), (50, 19))
+    elif type(block) == int:
+        s.blit(myfont.render(f"Купить за:", 1, '#fab100'), (10, 10))
+        s.blit(myfont.render(f"{block}", 1, '#fab100'), (10, 40))
+    else:
+        s.blit(at_speed, (20, 20))
+        s.blit(myfont.render(f"{60 // block.at_sp}", 1, '#fff200'), (50, 19))
+        s.blit(dmg, (120, 20))
+        s.blit(myfont.render(f"{block.dmg}", 1, '#ed1c24'), (145, 19))
+        s.blit(speed, (20, 60))
+        s.blit(myfont.render(f"{block.bull_sp}", 1, '#22b14c'), (50, 59))
+        s.blit(bullets, (123, 63))
+        s.blit(myfont.render(f"{block.shots_in_shot}", 1, '#20b1a4'), (145, 59))
+    return s
 
 class Board: #класс доскки
     def __init__(self):
@@ -150,6 +178,11 @@ class Shop_item:
         self.rectShot_gun.x = 1100
         self.rectShot_gun.y = 150
 
+        self.Laser = load_image('blocks\\laser_0.png')
+        self.rectLaser = self.Laser.get_rect()
+        self.rectLaser.x = 1100
+        self.rectLaser.y = 220
+
         self.flag = True
         # особое
 
@@ -218,6 +251,7 @@ class Shop_item:
     def attack(self, screen): #блоки оружия
         screen.blit(self.Machine_gun, (1100, 80))
         screen.blit(self.Shot_gun, (1100, 150))
+        screen.blit(self.Laser, (1100, 220))
 
     def vip(self, screen): #особые блоки
         screen.blit(self.Armor, (1100, 80))
@@ -241,6 +275,7 @@ class Shop_item:
                 self.flag = False
                 init_ship(board)
 
+
         # сохранить
         elif self.saveRect.collidepoint(pygame.mouse.get_pos()):
             if (args and args[0].type == pygame.MOUSEBUTTONDOWN and self.saveRect.collidepoint(args[0].pos) and
@@ -253,7 +288,8 @@ class Shop_item:
                     # прокачка
                 if self.upgrade_icon_Rect.collidepoint(pygame.mouse.get_pos()):
                     if args and args[0].type == pygame.MOUSEBUTTONDOWN and self.upgrade_icon_Rect.collidepoint(args[0].pos):
-                        if self.upgrade_mode and self.duit and board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].lvl < 6:
+                        if (self.upgrade_mode and self.duit and board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].up != 0
+                                and board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].up <= cache):
                             board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].kill()
                             cache -= board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].up
                             board[self.aktiv_block[1][0]][self.aktiv_block[1][1]] =\
@@ -281,7 +317,7 @@ class Shop_item:
                             self.duit = False
                             self.sell_mode = True
             else:
-                if args and args[0].type == pygame.MOUSEBUTTONDOWN and self.sell_icon_Rect.collidepoint(args[0].pos):
+                if args and args[0].type == pygame.MOUSEBUTTONDOWN and self.sell_icon_Rect.collidepoint(args[0].pos) and self.aktiv_block[0][2] <= cache:
                     pygame.mouse.set_pos(350, 350)
                     self.update = True
                     self.buy_mode = True
@@ -367,6 +403,8 @@ class Shop_item:
                         self.aktiv_block = [[pygame.transform.scale(self.Machine_gun, (150, 150)), 'Machine_gun_1', 750, self.Machine_gun]]
                     if self.rectShot_gun.collidepoint(event[0].pos):
                         self.aktiv_block = [[pygame.transform.scale(self.Shot_gun, (150, 150)), 'Shot_gun_1', 750, self.Shot_gun]]
+                    if self.rectLaser.collidepoint(event[0].pos):
+                        self.aktiv_block = [[pygame.transform.scale(self.Laser, (150, 150)), 'Laser_1', 1000, self.Laser]]
         else:
             self.timer = 0
         if self.aktiv_block:
@@ -375,7 +413,12 @@ class Shop_item:
                 screen.blit(self.aktiv_block[0], (750, 30))
                 if not move:
                     pygame.draw.rect(screen, (255, 255, 255), (self.aktiv_block[1][1] * 60 + 20, self.aktiv_block[1][0] * 60 + 20, 60, 60), 3)
+                try:
+                    screen.blit(print_stat(board[self.aktiv_block[1][0]][self.aktiv_block[1][1]]), (725, 310))
+                except Exception:
+                    pass
             else:
+                screen.blit(print_stat(self.aktiv_block[0][2]), (725, 310))
                 screen.blit(self.aktiv_block[0][0], (750, 30))
 
     def move_moduls(self, screen, event):  # передвижение модулей
@@ -387,6 +430,7 @@ class Shop_item:
                 move = None
                 return
             pos = pygame.mouse.get_pos()
+
             if pos[0] not in range(20, 680) or pos[1] not in range(20, 680):
                 board[move[1][0]][move[1][1]] = move[0]
                 self.update = True
