@@ -132,24 +132,29 @@ class boss(Enemy):
     base_speed = 2
     base_shoot_delay = 700  # Задержка для обычных снарядов
     bullet_spawn_offsets = [(-90, -40), (90, -40), (-70, -30), (70, -30), (-75, -30), (75, -30),
-                            (-150, 0), (150, 0), (-160, 0), (160, 0), (200, -50), (-200, -50), (95, -40), (-95, -40),   # Точки спавна пуль красные
-                            (-48, -35), (48, -35), (-55, -35), (55, -35), (-40, -35), (40, -35), (120, 0), (-120, 0),
+                            (-150, 0), (150, 0), (200, -50), (-200, -50), (95, -40), (-95, -40),   # Точки спавна пуль красные
+                            (-48, -35), (-160, 0), (160, 0), (48, -35), (-55, -35), (55, -35), (-40, -35), (40, -35), (120, 0), (-120, 0),
                             (-78, -35), (78, -35), (-68, -35), (68, -35)]   # Точки спавна пуль ракет
 
     def __init__(self, *group, index=0, total_enemies=1, level=1, max_health=5000):
         super().__init__(*group, index=index, total_enemies=total_enemies, level=level, max_health=max_health)
         self.blue_bullets = pygame.sprite.Group()  # Группа для синих снарядов
-        self.last_shot = pygame.time.get_ticks()  # Время последнего выстрела
+        self.last_shot = pygame.time.get_ticks()
+        self.last_shot1 = pygame.time.get_ticks()# Время последнего выстрела
         self.shoot_delay = 1500  # Задержка между выстрелами (1.5 секунды)
+        self.shoot_delay1 = 900
 
     def update(self, player_rect):
         super().update(player_rect)  # Вызываем родительский метод для обычной логики
-
         # Стрельба
         now = pygame.time.get_ticks()
         if now - self.last_shot > self.shoot_delay:
             self.last_shot = now
             self.shoot(player_rect)
+
+        if now - self.last_shot1 > self.shoot_delay1:
+            self.last_shot1 = now
+            self.shoot1(player_rect)
 
         self.blue_bullets.update()
         self.blue_bullets.draw(pygame.display.get_surface())
@@ -164,6 +169,11 @@ class boss(Enemy):
         for offset in self.bullet_spawn_offsets[14:]:  # Последние четыре точки для синих пуль
             blue_bullet = BlueBullet(self.rect.centerx + offset[0], self.rect.bottom + offset[1])
             self.blue_bullets.add(blue_bullet)
+
+    def shoot1(self, player_rect):
+        for offset in self.bullet_spawn_offsets[:14]:  # Первые шесть точек для красных пуль
+            bullet = Bullet(self.rect.centerx + offset[0], self.rect.bottom + offset[1])
+            self.bullets.add(bullet)
 
 
 

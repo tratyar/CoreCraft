@@ -1,7 +1,7 @@
 import pygame
 
 
-def play_mode(screen, events):
+def play_mode(screen, events, unlocked_levels):
     global g
     g = ''
     button_pressed = False
@@ -9,11 +9,11 @@ def play_mode(screen, events):
 
     # Определяем текст и прямоугольники для кнопок
     buttons = [
-        {"text": "lvl 1", "pos": (300, 300), "popup": "Это уровень 1"},
-        {"text": "lvl 2", "pos": (500, 600), "popup": "Это уровень 2"},
-        {"text": "lvl 3", "pos": (700, 300), "popup": "Это уровень 3"},
-        {"text": "lvl 4", "pos": (900, 600), "popup": "Это уровень 4"},
-        {"text": "назад", "pos": (100, 850), "popup": "Вернуться в меню"},
+        {"text": "lvl 1", "pos": (300, 300), "popup": "Это уровень 1", "locked": False},
+        {"text": "lvl 2", "pos": (500, 600), "popup": "Это уровень 2", "locked": not unlocked_levels["lvl 2"]},
+        {"text": "lvl 3", "pos": (700, 300), "popup": "Это уровень 3", "locked": not unlocked_levels["lvl 3"]},
+        {"text": "lvl 4", "pos": (900, 600), "popup": "Это уровень 4", "locked": not unlocked_levels["lvl 4"]},
+        {"text": "назад", "pos": (100, 850), "popup": "Вернуться в меню", "locked": False},
     ]
 
     custom_font = pygame.font.Font('media/fonts/quantum.otf', 30)
@@ -23,23 +23,33 @@ def play_mode(screen, events):
             if button["text"] == "назад":
                 button_text = custom_font.render(button["text"], True, (255, 255, 255))
             else:
-                button_text = pygame.font.Font(None, 120).render(button["text"], True, (255, 255, 255))
+                if button["locked"]:
+                    button_text = pygame.font.Font(None, 120).render(button["text"], True,
+                                                                     (128, 128, 128))  # Серый цвет для заблокированных
+                else:
+                    button_text = pygame.font.Font(None, 120).render(button["text"], True,
+                                                                     (255, 255, 255))  # Обычный цвет
 
             button_rect = button_text.get_rect(center=button["pos"])
             mouse_pos = pygame.mouse.get_pos()
 
-            if button_rect.collidepoint(mouse_pos):
+            if button_rect.collidepoint(mouse_pos) and not button["locked"]:
                 if button["text"] == "назад":
                     button_text = custom_font.render(button["text"], True, (255, 255, 0))  # Цвет при наведении
                 else:
-                    button_text = pygame.font.Font(None, 120).render(button["text"], True, (255, 255, 0))  # Цвет при наведении
+                    button_text = pygame.font.Font(None, 120).render(button["text"], True,
+                                                                     (255, 255, 0))  # Цвет при наведении
                 show_popup = button["popup"]  # Показываем всплывающее окно
                 g = button['text']
             else:
                 if button["text"] == "назад":
                     button_text = custom_font.render(button["text"], True, (255, 215, 0))
                 else:
-                    button_text = pygame.font.Font(None, 117).render(button["text"], True, (255, 255, 255))
+                    if button["locked"]:
+                        button_text = pygame.font.Font(None, 117).render(button["text"], True, (
+                        128, 128, 128))  # Серый цвет для заблокированных
+                    else:
+                        button_text = pygame.font.Font(None, 117).render(button["text"], True, (255, 255, 255))
 
             screen.blit(button_text, button_rect)
 
@@ -61,7 +71,7 @@ def play_mode(screen, events):
                 if g == "назад":
                     mode = 'menu'
                     return mode  # Возвращаемся в меню
-                if 'lvl' in g:
+                if 'lvl' in g and not button["locked"]:  # Проверяем, не заблокирован ли уровень
                     mode = str(g)
                     return mode
                 else:

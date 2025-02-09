@@ -20,6 +20,45 @@ xp = load_image('xp.png')
 myfont = pygame.font.Font('media\\fonts\\quantum.otf', 17)
 
 
+all_sprites = pygame.sprite.Group()
+screen_rect = (0, 0, 1200, 900)
+
+
+class Particle(pygame.sprite.Sprite):
+    # сгенерируем частицы разного размера
+
+    def __init__(self, pos, x, y, color):
+        s = pygame.Surface((10, 10), pygame.SRCALPHA)
+        s.fill(color)
+        super().__init__(all_sprites)
+        self.image = s
+        self.rect = self.image.get_rect()
+        self.now = pygame.time.get_ticks()
+        self.rip = random.randint(300, 600)
+
+        # у каждой частицы своя скорость - это вектор
+        self.velocity = [x, y]
+        # и свои координаты
+        self.rect.x, self.rect.y = pos
+
+    def update(self):
+        # перемещаем частицу
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        # убиваем, если частица ушла за экран
+        if not self.rect.colliderect(screen_rect) or pygame.time.get_ticks() - self.now >= self.rip:
+            self.kill()
+
+
+def create_particles(position, color):
+    # количество создаваемых частиц
+    particle_count = 60
+    for _ in range(particle_count):
+        x = random.randint(-6, 6)
+        y = random.randint(-6, 6)
+        Particle(position, x, y, color)
+
+
 def save_info():
     with open('saves.txt', 'r') as f:
         data = f.readlines()
@@ -298,6 +337,7 @@ class Shop_item:
                             self.upgrade_mode = False
                             self.duit = False
                             self.update = True
+                            create_particles((45 + self.aktiv_block[1][1] * 60, 45 + self.aktiv_block[1][0] * 60), (150, 150, 150, 120))
                         else:
                             self.duit = False
                             self.upgrade_mode = True
@@ -311,6 +351,8 @@ class Shop_item:
                             board[self.aktiv_block[1][0]][self.aktiv_block[1][1]] = 0
                             self.save_board()
                             self.sell_mode = False
+                            create_particles((45 + self.aktiv_block[1][1] * 60, 45 + self.aktiv_block[1][0] * 60),
+                                             (255, 255, 255, 200))
                             self.aktiv_block = None
                             self.duit = False
                         else:
@@ -508,6 +550,8 @@ class Shop_item:
         screen.blit(self.aktiv_block[0][3], (pos[0] - 15, pos[1] - 15))
         if event and event[0].type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and board[(pos[1] - 20) // 60][(pos[0] - 20) // 60] == 1:
             board[(pos[1] - 20) // 60][(pos[0] - 20) // 60] = self.aktiv_block[0][1]
+            create_particles((pos[0], pos[1]),
+                             (255, 255, 0, 200))
             self.update = True
             self.can_save = True
             self.buy_mode = False
@@ -535,6 +579,8 @@ class Editor(pygame.sprite.Sprite):  # класс ответственный з�
                 self.shop.shop_item.aktiv_block[0] = pygame.transform.scale(board[self.shop.shop_item.aktiv_block[1][0]][self.shop.shop_item.aktiv_block[1][1]].image, (150, 150))
             except Exception:
                 pass
+        all_sprites.draw(screen) #частицы
+        all_sprites.update()
         return screen
 
     def restart(self):
