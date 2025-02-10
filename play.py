@@ -1,7 +1,7 @@
 import pygame
 
 
-def play_mode(screen, events, unlocked_levels):
+def play_mode(screen, events, unlocked_levels, kk):
     global g
     g = ''
     button_pressed = False
@@ -9,10 +9,10 @@ def play_mode(screen, events, unlocked_levels):
 
     # Определяем текст и прямоугольники для кнопок
     buttons = [
-        {"text": "lvl 1", "pos": (300, 300), "popup": "Это уровень 1", "locked": False},
-        {"text": "lvl 2", "pos": (500, 600), "popup": "Это уровень 2", "locked": not unlocked_levels["lvl 2"]},
-        {"text": "lvl 3", "pos": (700, 300), "popup": "Это уровень 3", "locked": not unlocked_levels["lvl 3"]},
-        {"text": "lvl 4", "pos": (900, 600), "popup": "Это уровень 4", "locked": not unlocked_levels["lvl 4"]},
+        {"text": "lvl 1", "pos": (300, 300), "popup": f"Награда за прохождение: {1000 * kk}", "locked": False},
+        {"text": "lvl 2", "pos": (500, 600), "popup": f"Награда за прохождение: {2000 * kk}", "locked": not unlocked_levels["lvl 2"]},
+        {"text": "lvl 3", "pos": (700, 300), "popup": f"Награда за прохождение: {3000 * kk}", "locked": not unlocked_levels["lvl 3"]},
+        {"text": "lvl 4", "pos": (900, 600), "popup": f"Награда за прохождение: {4000 * kk}", "locked": not unlocked_levels["lvl 4"]},
         {"text": "назад", "pos": (100, 850), "popup": "Вернуться в меню", "locked": False},
     ]
 

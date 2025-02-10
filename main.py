@@ -2,6 +2,7 @@ import pygame
 import sys
 import os
 import random
+import math
 import editor
 import my_ship
 from editor import Editor, save_info
@@ -13,6 +14,118 @@ from settings import SettingsButtons
 pygame.init()
 
 mode = 'menu'
+
+
+
+def project(vector, w, h, fov, distance):
+    factor = math.atan(fov / 2 * math.pi / 180) / (distance + vector.z)
+    x = vector.x * factor * w + w / 2
+    y = -vector.y * factor * w + h / 2
+    return pygame.math.Vector3(x, y, vector.z)
+
+
+def rotate_vertices(vertices, angle, axis):
+    return [v.rotate(angle, axis) for v in vertices]
+
+
+def scale_vertices(vertices, s):
+    return [pygame.math.Vector3(v[0] * s[0], v[1] * s[1], v[2] * s[2]) for v in vertices]
+
+
+def translate_vertices(vertices, t):
+    return [v + pygame.math.Vector3(t) for v in vertices]
+
+
+def project_vertices(vertices, w, h, fov, distance):
+    return [project(v, w, h, fov, distance) for v in vertices]
+
+
+class Mesh():
+
+    def __init__(self, vertices, faces):
+        self.__vertices = [pygame.math.Vector3(v) for v in vertices]
+        self.__faces = faces
+
+    def rotate(self, angle, axis):
+        self.__vertices = rotate_vertices(self.__vertices, angle, axis)
+
+    def scale(self, s):
+        self.__vertices = scale_vertices(self.__vertices, s)
+
+    def translate(self, t):
+        self.__vertices = translate_vertices(self.__vertices, t)
+
+    def calculate_average_z(self, vertices):
+        return [(i, sum([vertices[j].z for j in f]) / len(f)) for i, f in enumerate(self.__faces)]
+
+    def get_face(self, index):
+        return self.__faces[index]
+
+    def get_vertices(self):
+        return self.__vertices
+
+    def create_polygon(self, face, vertices):
+        return [(vertices[i].x, vertices[i].y) for i in [*face, face[0]]]
+
+
+
+
+class Scene:
+    def __init__(self, mehses, fov, distance):
+        self.meshes = mehses
+        self.fov = fov
+        self.distance = distance
+        self.euler_angles = [0, 0, 0]
+        self.move = 1
+        self.color = [255, 0, 0]
+
+    def set_colot(self):
+        if self.color[0] == 255:
+            self.move = -1
+        elif self.color[0] == 0:
+            self.move = 1
+        self.color[0] += self.move
+        self.color[2] -= self.move
+
+    def transform_vertices(self, vertices, width, height):
+        transformed_vertices = vertices
+        axis_list = [(1, 0, 0), (0, 1, 0), (0, 0, 1)]
+        for angle, axis in reversed(list(zip(list(self.euler_angles), axis_list))):
+            transformed_vertices = rotate_vertices(transformed_vertices, angle, axis)
+        transformed_vertices = project_vertices(transformed_vertices, width, height, self.fov, self.distance)
+        return transformed_vertices
+
+    def draw(self, surface):
+
+        polygons = []
+        for mesh in self.meshes:
+            transformed_vertices = self.transform_vertices(mesh.get_vertices(), *surface.get_size())
+            avg_z = mesh.calculate_average_z(transformed_vertices)
+            for z in avg_z:
+                pointlist = mesh.create_polygon(mesh.get_face(z[0]), transformed_vertices)
+                polygons.append((pointlist, z[1]))
+        for poly in sorted(polygons, key=lambda x: x[1], reverse=True):
+            pygame.draw.polygon(surface, self.color, poly[0])
+            pygame.draw.polygon(surface, (0, 0, 0), poly[0], 1)
+        self.set_colot()
+
+
+vertices = [(-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1), (-1, -1, -1), (1, -1, -1), (1, 1, -1), (-1, 1, -1), (-2, 1, -1)]
+faces = [(0, 1, 2, 3), (1, 5, 6, 2), (5, 4, 7, 6), (4, 0, 3, 7), (3, 2, 6, 7), (1, 0, 4, 5)]
+
+cube_origins = [(-3, 0, 0), (3, 0, 0), (0, 0, 4), (0, 0, -4), (-3, 1, 0), (3, 1, 0), (0, 1, 3), (0, 1, -3), (-3, -1, 0), (3, -1, 0), (0, -1, 3), (0, -1, -3),
+                (-2, 2, 0), (-2, -2, 0), (2, 2, 0), (2, -2, 0), (0, 1, 2), (0, -1, 2), (0, 1, -2), (0, -1, -2),
+                (2, 3, 0), (2, -3, 0), (-2, 3, 0), (-2, -3, 0), (1, 4, 0), (1, -4, 0), (-1, 4, 0), (-1, -4, 0),
+                (0, 2, 0), (0, 2, 1), (0, 2, -1), (0, -2, 0), (0, -2, 1), (0, -2, -1), (0, 5, 0), (0, -5, 0)]
+meshes = []
+for origin in cube_origins:
+    cube = Mesh(vertices, faces)
+    cube.scale((0.35, 0.35, 0.35))
+    cube.translate(origin)
+    meshes.append(cube)
+
+scene = Scene(meshes, 90, 10)
+
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('media\\sprite', name)
@@ -116,6 +229,7 @@ class Main_bottons(pygame.sprite.Sprite):
 
 
 if __name__ == '__main__':
+    xss = 0
     # В начале файла, рядом с другими глобальными переменными
     unlocked_levels = {"lvl 1": True, "lvl 2": False, "lvl 3": False,
                        "lvl 4": True}  # По умолчанию открыт только первый уровень
@@ -123,7 +237,7 @@ if __name__ == '__main__':
     wave_text_fade_in = True  # Флаг для появления текста
     wave_text_fade_out = False  # Флаг для исчезания текста
     wave_text_surface = None
-    kk = 0
+    kk = 1
     pygame.display.set_caption("CoreCraft")
     screen = pygame.display.set_mode((1200, 900))
     clock = pygame.time.Clock()
@@ -165,13 +279,18 @@ if __name__ == '__main__':
 
         if mode == 'menu':
             main_bottons.update(event)
+            s = pygame.Surface((600, 600), pygame.SRCALPHA)
+            scene.draw(s)
+            scene.euler_angles[1] += 1
+            screen.blit(s, (550, 150))
+            screen.blit(pygame.font.Font('media\\fonts\\quantum.otf', 50).render("CoreCraft", 1, '#fff200'), (40, 180))
         elif mode == 'edit':
             screen.blit(ship_editor.update(screen, event), (0, 0))
             if not ship_editor.shop.shop_item.flag:
                 mode = 'menu'
         elif mode == 'play':
             waave = 0
-            level, player_rect = play_mode(screen, events, unlocked_levels), play_mode(screen, events, unlocked_levels)
+            level, player_rect = play_mode(screen, events, unlocked_levels, kk), play_mode(screen, events, unlocked_levels, kk)
             if level:
                 mode = level.lower()
                 print(mode)
@@ -278,6 +397,7 @@ if __name__ == '__main__':
             # Создание врагов для текущей волны
             if len(enemies) == 0 and not show_wave_text:
                 if current_level == 1:
+                    xss = 0
                     if waave == 1:
                         enemy1 = T_0(enemies, index=0, total_enemies=1, level=1, max_health=300 * kk)
                     if waave == 2:
@@ -289,6 +409,7 @@ if __name__ == '__main__':
                         enemy3 = T_0(enemies, index=2, total_enemies=3, level=1, max_health=300 * kk)
 
                 if current_level == 2:
+                    xss = 0
                     if waave == 1:
                         enemy1 = T_1(enemies, index=0, total_enemies=2, level=2, max_health=500 * kk)
                         enemy2 = T_1(enemies, index=1, total_enemies=2, level=2, max_health=500 * kk)
@@ -306,6 +427,7 @@ if __name__ == '__main__':
                         enemy5 = T_0(enemies, index=4, total_enemies=5, level=2, max_health=300 * kk)
 
                 if current_level == 3:
+                    xss = 0
                     if waave == 1:
                         enemy1 = T_0(enemies, index=0, total_enemies=8, level=3, max_health=300 * kk)
                         enemy2 = T_0(enemies, index=1, total_enemies=8, level=3, max_health=300 * kk)
@@ -323,6 +445,7 @@ if __name__ == '__main__':
                         enemy5 = T_2(enemies, index=4, total_enemies=5, level=3, max_health=1000 * kk)
 
                 if current_level == 4:
+                    xss = 0
                     if waave == 1:
                         enemy1 = T_0(enemies, index=0, total_enemies=7, level=4, max_health=300 * kk)
                         enemy2 = T_1(enemies, index=1, total_enemies=7, level=4, max_health=500 * kk)
@@ -339,6 +462,16 @@ if __name__ == '__main__':
 
         # Отображение результата игры
         if game_over:
+            if xss == 0:
+                if current_level == 1:
+                    editor.cache += (1000 * kk)
+                if current_level == 2:
+                    editor.cache += (2000 * kk)
+                if current_level == 3:
+                    editor.cache += (3000 * kk)
+                if current_level == 4:
+                    editor.cache += (4000 * kk)
+                xss += 1
             current_time = pygame.time.get_ticks()
             if current_time - result_display_time < result_delay:
                 # Отображаем текст "Победа" или "Поражение"
@@ -346,10 +479,13 @@ if __name__ == '__main__':
                 if game_result == "win":
                     mode = "win"
                     if current_level < 4:  # Если это не последний уровень
+
                         next_level = f"lvl {current_level + 1}"  # Следующий уровень
                         unlocked_levels[next_level] = True
+
                     my_ship.xp = my_ship.max_xp
                     result_text = result_font.render("Победа!", True, (0, 255, 0))
+
                 else:
                     for enemy in enemies:
                         enemy.kill()
