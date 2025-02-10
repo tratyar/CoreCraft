@@ -10,9 +10,12 @@ def play_mode(screen, events, unlocked_levels, kk):
     # Определяем текст и прямоугольники для кнопок
     buttons = [
         {"text": "lvl 1", "pos": (300, 300), "popup": f"Награда за прохождение: {1000 * kk}", "locked": False},
-        {"text": "lvl 2", "pos": (500, 600), "popup": f"Награда за прохождение: {2000 * kk}", "locked": not unlocked_levels["lvl 2"]},
-        {"text": "lvl 3", "pos": (700, 300), "popup": f"Награда за прохождение: {3000 * kk}", "locked": not unlocked_levels["lvl 3"]},
-        {"text": "lvl 4", "pos": (900, 600), "popup": f"Награда за прохождение: {4000 * kk}", "locked": not unlocked_levels["lvl 4"]},
+        {"text": "lvl 2", "pos": (500, 600), "popup": f"Награда за прохождение: {2000 * kk}",
+         "locked": not unlocked_levels["lvl 2"]},
+        {"text": "lvl 3", "pos": (700, 300), "popup": f"Награда за прохождение: {3000 * kk}",
+         "locked": not unlocked_levels["lvl 3"]},
+        {"text": "lvl 4", "pos": (900, 600), "popup": f"Награда за прохождение: {4000 * kk}",
+         "locked": not unlocked_levels["lvl 4"]},
         {"text": "назад", "pos": (100, 850), "popup": "Вернуться в меню", "locked": False},
     ]
 
@@ -47,7 +50,7 @@ def play_mode(screen, events, unlocked_levels, kk):
                 else:
                     if button["locked"]:
                         button_text = pygame.font.Font(None, 117).render(button["text"], True, (
-                        128, 128, 128))  # Серый цвет для заблокированных
+                            128, 128, 128))  # Серый цвет для заблокированных
                     else:
                         button_text = pygame.font.Font(None, 117).render(button["text"], True, (255, 255, 255))
 

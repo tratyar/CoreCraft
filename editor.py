@@ -5,8 +5,8 @@ import math
 from blocks import *
 from my_ship import *
 import random
-pygame.init()
 
+pygame.init()
 
 board = None
 move = None
@@ -19,7 +19,6 @@ speed = load_image('speed.png')
 bullets = load_image('bullets.png')
 xp = load_image('xp.png')
 myfont = pygame.font.Font('media\\fonts\\quantum.otf', 17)
-
 
 all_sprites = pygame.sprite.Group()
 screen_rect = (0, 0, 1200, 900)
@@ -185,9 +184,10 @@ def print_stat(block):
         s.blit(myfont.render(f"{block.shots_in_shot}", 1, '#20b1a4'), (145, 59))
     return s
 
-class Board: #класс доскки
+
+class Board:  # класс доскки
     def __init__(self):
-        self.board = [[0 for _ in range(11)]for _ in range(11)]
+        self.board = [[0 for _ in range(11)] for _ in range(11)]
         self.width = 11
         self.height = 11
         self.left = 20
@@ -197,7 +197,7 @@ class Board: #класс доскки
         self.test = Test()
         self.load_bord()
 
-    def load_bord(self): #подстановка классов в поле
+    def load_bord(self):  # подстановка классов в поле
         global board, move
         if not board:
             self.board = [[0 for _ in range(11)] for _ in range(11)]
@@ -244,7 +244,7 @@ class Board: #класс доскки
                             self.board[y][max(x, 1) - 1] = 1
         board = self.board
 
-    def render(self, screen): #прогрузка поля
+    def render(self, screen):  # прогрузка поля
         global move
         for y in range(self.height + 1):
             pygame.draw.line(screen, self.color[0], (self.left, self.top + y * self.cell_size),
@@ -256,7 +256,8 @@ class Board: #класс доскки
             for y in range(11):
                 for x in range(11):
                     if self.board[y][x] == 1:
-                        pygame.draw.rect(screen, (200, 200, 200), (45 + x * 60, 45 + y * 60, 10, 10), 0) # клеточки для постоновки блока
+                        pygame.draw.rect(screen, (200, 200, 200), (45 + x * 60, 45 + y * 60, 10, 10),
+                                         0)  # клеточки для постоновки блока
 
 
 class Shop:
@@ -268,13 +269,13 @@ class Shop:
         self.shop_item = Shop_item()
         self.mod = 1
 
-    def update(self, screen, args): # остальная часть магазина
+    def update(self, screen, args):  # остальная часть магазина
         global move, cache
         if args and args[0].type == pygame.MOUSEBUTTONUP:
             self.shop_item.duit = True
-        self.mod = self.shop_item.add_botton(screen, self.mod, cache, args) # отрисовка кнопок и типов блоков
-        self.update_item_store(screen) # отрисовка блоков в магазине
-        self.shop_item.open_info(screen, self.mod, args) # открытие информации по блоку
+        self.mod = self.shop_item.add_botton(screen, self.mod, cache, args)  # отрисовка кнопок и типов блоков
+        self.update_item_store(screen)  # отрисовка блоков в магазине
+        self.shop_item.open_info(screen, self.mod, args)  # открытие информации по блоку
         if self.shop_item.buy_mode:
             self.shop_item.buy(screen, args)
         if self.shop_item.sell_mode:
@@ -349,44 +350,44 @@ class Shop_item:
         self.saveRect = self.save.get_rect()
         self.saveRect.x = 30
         self.saveRect.y = 700
-        #буфер для активного модуля
+        # буфер для активного модуля
         self.aktiv_block = None
         self.sell_mode = False
         self.upgrade_mode = False
         self.duit = False
         self.buy_mode = False
-            # прокачать
+        # прокачать
         self.upgrade_icon = load_image('upgrade.png')
         self.upgrade_icon_ok = load_image('upgrade_ok.png')
         self.upgrade_icon_Rect = self.upgrade_icon.get_rect()
         self.upgrade_icon_Rect.x = 745
         self.upgrade_icon_Rect.y = 240
-            # продажа
+        # продажа
         self.sell_icon = load_image('sell.png')
         self.sell_icon_ok = load_image('sell_ok.png')
         self.sell_icon_Rect = self.sell_icon.get_rect()
         self.sell_icon_Rect.x = 810
         self.sell_icon_Rect.y = 240
-            # назад
+        # назад
         self.back_icon = load_image('back.png')
         self.back_icon_Rect = self.back_icon.get_rect()
         self.back_icon_Rect.x = 875
         self.back_icon_Rect.y = 240
         # перeтаскивание модулей
-        self.update = False # обновить доску
+        self.update = False  # обновить доску
         self.moving_item = None
         self.before_move = None
         self.can_save = False
 
-    def defense(self, screen): #блоки брони
+    def defense(self, screen):  # блоки брони
         screen.blit(self.Armor, (1100, 80))
 
-    def attack(self, screen): #блоки оружия
+    def attack(self, screen):  # блоки оружия
         screen.blit(self.Machine_gun, (1100, 80))
         screen.blit(self.Shot_gun, (1100, 150))
         screen.blit(self.Laser, (1100, 220))
 
-    def vip(self, screen): #особые блоки
+    def vip(self, screen):  # особые блоки
         screen.blit(self.Armor, (1100, 80))
 
     def add_botton(self, screen, mod, cash, args):
@@ -418,26 +419,30 @@ class Shop_item:
         if self.aktiv_block:
             global cache, buy
             if len(self.aktiv_block) == 2:
-                    # прокачка
+                # прокачка
                 if self.upgrade_icon_Rect.collidepoint(pygame.mouse.get_pos()):
-                    if args and args[0].type == pygame.MOUSEBUTTONDOWN and self.upgrade_icon_Rect.collidepoint(args[0].pos):
-                        if (self.upgrade_mode and self.duit and board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].up != 0
+                    if args and args[0].type == pygame.MOUSEBUTTONDOWN and self.upgrade_icon_Rect.collidepoint(
+                            args[0].pos):
+                        if (self.upgrade_mode and self.duit and board[self.aktiv_block[1][0]][
+                            self.aktiv_block[1][1]].up != 0
                                 and board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].up <= cache):
                             board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].kill()
                             cache -= board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].up
-                            board[self.aktiv_block[1][0]][self.aktiv_block[1][1]] =\
+                            board[self.aktiv_block[1][0]][self.aktiv_block[1][1]] = \
                                 (board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].__class__.__name__ + '_' +
                                  str(board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].lvl + 1))
                             self.upgrade_mode = False
                             self.duit = False
                             self.update = True
-                            create_particles((45 + self.aktiv_block[1][1] * 60, 45 + self.aktiv_block[1][0] * 60), (150, 150, 150, 120))
+                            create_particles((45 + self.aktiv_block[1][1] * 60, 45 + self.aktiv_block[1][0] * 60),
+                                             (150, 150, 150, 120))
                         else:
                             self.duit = False
                             self.upgrade_mode = True
                     # продажа
                 if self.sell_icon_Rect.collidepoint(pygame.mouse.get_pos()):
-                    if (args and args[0].type == pygame.MOUSEBUTTONDOWN and self.sell_icon_Rect.collidepoint(args[0].pos)
+                    if (args and args[0].type == pygame.MOUSEBUTTONDOWN and self.sell_icon_Rect.collidepoint(
+                            args[0].pos)
                             and 'Core' not in board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].__class__.__name__):
                         if self.sell_mode and self.duit:
                             cache += board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].sell
@@ -453,7 +458,8 @@ class Shop_item:
                             self.duit = False
                             self.sell_mode = True
             else:
-                if args and args[0].type == pygame.MOUSEBUTTONDOWN and self.sell_icon_Rect.collidepoint(args[0].pos) and self.aktiv_block[0][2] <= cache:
+                if args and args[0].type == pygame.MOUSEBUTTONDOWN and self.sell_icon_Rect.collidepoint(args[0].pos) and \
+                        self.aktiv_block[0][2] <= cache:
                     pygame.mouse.set_pos(350, 350)
                     self.update = True
                     self.buy_mode = True
@@ -467,24 +473,24 @@ class Shop_item:
         screen.blit(self.textVip, (530, 700))
         pygame.draw.rect(screen, '#ffffff', (525, 700, 118, 28), 2)
         screen.blit(self.back, (25, 845))
-        if self.can_save: # включение кнопки сохранить
+        if self.can_save:  # включение кнопки сохранить
             screen.blit(self.save, (30, 700))
             pygame.draw.rect(screen, '#FFB300', (27, 695, 170, 38), 2)
 
-        #деньги
+        # деньги
         pygame.draw.rect(screen, '#22b14c', (1020, 20, 170, 40), 2)
         screen.blit(self.myfont.render(f"{cash}", 1, self.text_color), (1058, 27))
 
         # кнопки активного блока
         if self.aktiv_block:
             if len(self.aktiv_block) == 2:
-                    # прокачать
+                # прокачать
                 if self.upgrade_mode:
                     screen.blit(self.upgrade_icon_ok, (745, 250))
                 else:
                     screen.blit(self.upgrade_icon, (745, 250))
                 pygame.draw.rect(screen, '#ffff00', (740, 245, 40, 40), 2)
-                    # продать
+                # продать
                 if self.sell_mode:
                     screen.blit(self.sell_icon_ok, (810, 250))
                 else:
@@ -492,18 +498,18 @@ class Shop_item:
                 self.sell_icon_Rect.x = 810
                 self.sell_icon_Rect.y = 240
                 pygame.draw.rect(screen, '#22b14c', (805, 245, 40, 40), 2)
-                    # убрать подробности
+                # убрать подробности
                 screen.blit(self.back_icon, (875, 250))
                 self.back_icon_Rect.x = 875
                 self.back_icon_Rect.y = 240
                 pygame.draw.rect(screen, '#ffffff', (870, 245, 40, 40), 2)
             else:
-                    # убрать подробности
+                # убрать подробности
                 screen.blit(self.back_icon, (840, 250))
                 self.back_icon_Rect.x = 840
                 self.back_icon_Rect.y = 240
                 pygame.draw.rect(screen, '#ffffff', (835, 245, 40, 40), 2)
-                    # купить
+                # купить
                 screen.blit(self.sell_icon, (790, 250))
                 self.sell_icon_Rect.x = 790
                 self.sell_icon_Rect.y = 240
@@ -530,16 +536,20 @@ class Shop_item:
                 if self.back_icon_Rect.collidepoint(event[0].pos):
                     self.aktiv_block = None
                     move = None
-                elif mod == 1:  #защитные блоки
+                elif mod == 1:  # защитные блоки
                     if self.rectArmor.collidepoint(event[0].pos):
-                        self.aktiv_block = [[pygame.transform.scale(self.Armor, (150, 150)), 'Armor_1', 500, self.Armor]]
-                elif mod == 2:  #оружие
+                        self.aktiv_block = [
+                            [pygame.transform.scale(self.Armor, (150, 150)), 'Armor_1', 500, self.Armor]]
+                elif mod == 2:  # оружие
                     if self.rectMachine_gun.collidepoint(event[0].pos):
-                        self.aktiv_block = [[pygame.transform.scale(self.Machine_gun, (150, 150)), 'Machine_gun_1', 750, self.Machine_gun]]
+                        self.aktiv_block = [[pygame.transform.scale(self.Machine_gun, (150, 150)), 'Machine_gun_1', 750,
+                                             self.Machine_gun]]
                     if self.rectShot_gun.collidepoint(event[0].pos):
-                        self.aktiv_block = [[pygame.transform.scale(self.Shot_gun, (150, 150)), 'Shot_gun_1', 750, self.Shot_gun]]
+                        self.aktiv_block = [
+                            [pygame.transform.scale(self.Shot_gun, (150, 150)), 'Shot_gun_1', 750, self.Shot_gun]]
                     if self.rectLaser.collidepoint(event[0].pos):
-                        self.aktiv_block = [[pygame.transform.scale(self.Laser, (150, 150)), 'Laser_1', 1000, self.Laser]]
+                        self.aktiv_block = [
+                            [pygame.transform.scale(self.Laser, (150, 150)), 'Laser_1', 1000, self.Laser]]
         else:
             self.timer = 0
         if self.aktiv_block:
@@ -547,7 +557,8 @@ class Shop_item:
                 # блок
                 screen.blit(self.aktiv_block[0], (750, 30))
                 if not move:
-                    pygame.draw.rect(screen, (255, 255, 255), (self.aktiv_block[1][1] * 60 + 20, self.aktiv_block[1][0] * 60 + 20, 60, 60), 3)
+                    pygame.draw.rect(screen, (255, 255, 255),
+                                     (self.aktiv_block[1][1] * 60 + 20, self.aktiv_block[1][0] * 60 + 20, 60, 60), 3)
                 try:
                     screen.blit(print_stat(board[self.aktiv_block[1][0]][self.aktiv_block[1][1]]), (725, 310))
                 except Exception:
@@ -574,17 +585,17 @@ class Shop_item:
             move[0].rect.x = pos[0] - 30
             move[0].rect.y = pos[1] - 30
             if (event and event[0].type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and self.before_move
-                    != pos) and board[(pos[1] - 20) // 60][(pos[0] - 20) // 60] == 1:
+                != pos) and board[(pos[1] - 20) // 60][(pos[0] - 20) // 60] == 1:
                 board[(pos[1] - 20) // 60][(pos[0] - 20) // 60] = move[0]
                 self.update = True
                 move = None
                 self.can_save = True
         else:  # таймер для включения режима передвижения блоков
             pos = pygame.mouse.get_pos()
-            if (pygame.time.get_ticks() - self.timer)/1000 > 0.01:
+            if (pygame.time.get_ticks() - self.timer) / 1000 > 0.01:
                 pygame.draw.arc(screen, (255, 255, 255, 100), (pos[0] - 20, pos[1] - 20, 40, 40), 0,
-                                (pygame.time.get_ticks() - self.timer)/100 - 0.1, 6)
-            if (pygame.time.get_ticks() - self.timer)/100 >= 6.36:
+                                (pygame.time.get_ticks() - self.timer) / 100 - 0.1, 6)
+            if (pygame.time.get_ticks() - self.timer) / 100 >= 6.36:
                 move = [board[(pos[1] - 20) // 60][(pos[0] - 20) // 60], [(pos[1] - 20) // 60, (pos[0] - 20) // 60]]
                 self.before_move = pos
                 board[(pos[1] - 20) // 60][(pos[0] - 20) // 60] = 0
@@ -605,14 +616,15 @@ class Shop_item:
         with open('saves.txt', 'w') as f:
             f.write('\n'.join(data))
 
-    def sell_block(self, screen, event): # отображение цены продажи
+    def sell_block(self, screen, event):  # отображение цены продажи
         if event and event[0].type == pygame.MOUSEBUTTONDOWN and not self.sell_icon_Rect.collidepoint(event[0].pos):
             self.sell_mode = False
         else:
             s = pygame.Surface((200, 35), pygame.SRCALPHA)
             s.fill((34, 177, 76, 50))
             pygame.draw.rect(s, (34, 177, 76), (0, 0, 200, 35), 3)
-            s.blit(pygame.font.Font('media\\fonts\\quantum.otf', 12).render(f"продать за {board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].sell}", 1, '#FFB300'), (10, 10))
+            s.blit(pygame.font.Font('media\\fonts\\quantum.otf', 12).render(
+                f"продать за {board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].sell}", 1, '#FFB300'), (10, 10))
             screen.blit(s, (725, 195))
 
     def upgrade(self, screen, event):
@@ -626,7 +638,8 @@ class Shop_item:
                 s.blit(pygame.font.Font('media\\fonts\\quantum.otf', 12).render(
                     f"Максимальный ур", 1, '#FFB300'), (10, 10))
             else:
-                s.blit(pygame.font.Font('media\\fonts\\quantum.otf', 12).render(f"улучшить за {board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].up}", 1, '#FFB300'), (10, 10))
+                s.blit(pygame.font.Font('media\\fonts\\quantum.otf', 12).render(
+                    f"улучшить за {board[self.aktiv_block[1][0]][self.aktiv_block[1][1]].up}", 1, '#FFB300'), (10, 10))
             screen.blit(s, (725, 195))
 
     def buy(self, screen, event):
@@ -641,7 +654,8 @@ class Shop_item:
             pygame.mouse.set_pos(800, 260)
             return
         screen.blit(self.aktiv_block[0][3], (pos[0] - 15, pos[1] - 15))
-        if event and event[0].type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and board[(pos[1] - 20) // 60][(pos[0] - 20) // 60] == 1:
+        if event and event[0].type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and \
+                board[(pos[1] - 20) // 60][(pos[0] - 20) // 60] == 1:
             board[(pos[1] - 20) // 60][(pos[0] - 20) // 60] = self.aktiv_block[0][1]
             create_particles((pos[0], pos[1]),
                              (255, 255, 0, 200))
@@ -650,8 +664,6 @@ class Shop_item:
             self.buy_mode = False
             cache -= self.aktiv_block[0][2]
             buy = False
-
-
 
 
 class Editor(pygame.sprite.Sprite):  # класс ответственный за работу редактора
@@ -669,10 +681,12 @@ class Editor(pygame.sprite.Sprite):  # класс ответственный з�
             self.shop.shop_item.open_info(screen, self.shop.mod, args)
             self.shop.shop_item.update = False
             try:
-                self.shop.shop_item.aktiv_block[0] = pygame.transform.scale(board[self.shop.shop_item.aktiv_block[1][0]][self.shop.shop_item.aktiv_block[1][1]].image, (150, 150))
+                self.shop.shop_item.aktiv_block[0] = pygame.transform.scale(
+                    board[self.shop.shop_item.aktiv_block[1][0]][self.shop.shop_item.aktiv_block[1][1]].image,
+                    (150, 150))
             except Exception:
                 pass
-        all_sprites.draw(screen) #частицы
+        all_sprites.draw(screen)  # частицы
         all_sprites.update()
         s = pygame.Surface((30, 30), pygame.SRCALPHA)
         scene.draw(s)
@@ -684,5 +698,3 @@ class Editor(pygame.sprite.Sprite):  # класс ответственный з�
         global board
         board = None
         self.board.load_bord()
-
-

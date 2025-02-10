@@ -16,7 +16,6 @@ pygame.init()
 mode = 'menu'
 
 
-
 def project(vector, w, h, fov, distance):
     factor = math.atan(fov / 2 * math.pi / 180) / (distance + vector.z)
     x = vector.x * factor * w + w / 2
@@ -68,8 +67,6 @@ class Mesh():
         return [(vertices[i].x, vertices[i].y) for i in [*face, face[0]]]
 
 
-
-
 class Scene:
     def __init__(self, mehses, fov, distance):
         self.meshes = mehses
@@ -110,10 +107,12 @@ class Scene:
         self.set_colot()
 
 
-vertices = [(-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1), (-1, -1, -1), (1, -1, -1), (1, 1, -1), (-1, 1, -1), (-2, 1, -1)]
+vertices = [(-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1), (-1, -1, -1), (1, -1, -1), (1, 1, -1), (-1, 1, -1),
+            (-2, 1, -1)]
 faces = [(0, 1, 2, 3), (1, 5, 6, 2), (5, 4, 7, 6), (4, 0, 3, 7), (3, 2, 6, 7), (1, 0, 4, 5)]
 
-cube_origins = [(-3, 0, 0), (3, 0, 0), (0, 0, 4), (0, 0, -4), (-3, 1, 0), (3, 1, 0), (0, 1, 3), (0, 1, -3), (-3, -1, 0), (3, -1, 0), (0, -1, 3), (0, -1, -3),
+cube_origins = [(-3, 0, 0), (3, 0, 0), (0, 0, 4), (0, 0, -4), (-3, 1, 0), (3, 1, 0), (0, 1, 3), (0, 1, -3), (-3, -1, 0),
+                (3, -1, 0), (0, -1, 3), (0, -1, -3),
                 (-2, 2, 0), (-2, -2, 0), (2, 2, 0), (2, -2, 0), (0, 1, 2), (0, -1, 2), (0, 1, -2), (0, -1, -2),
                 (2, 3, 0), (2, -3, 0), (-2, 3, 0), (-2, -3, 0), (1, 4, 0), (1, -4, 0), (-1, 4, 0), (-1, -4, 0),
                 (0, 2, 0), (0, 2, 1), (0, 2, -1), (0, -2, 0), (0, -2, 1), (0, -2, -1), (0, 5, 0), (0, -5, 0)]
@@ -135,6 +134,7 @@ def load_image(name, colorkey=None):
     image = pygame.image.load(fullname)
     return image
 
+
 class BeckGround(pygame.sprite.Sprite):
     bg = load_image("background.png")
 
@@ -150,6 +150,7 @@ class BeckGround(pygame.sprite.Sprite):
             self.rect.y = -718
         else:
             self.rect.y += 1
+
 
 class Main_bottons(pygame.sprite.Sprite):
     def __init__(self, *group):
@@ -290,7 +291,8 @@ if __name__ == '__main__':
                 mode = 'menu'
         elif mode == 'play':
             waave = 0
-            level, player_rect = play_mode(screen, events, unlocked_levels, kk), play_mode(screen, events, unlocked_levels, kk)
+            level, player_rect = play_mode(screen, events, unlocked_levels, kk), play_mode(screen, events,
+                                                                                           unlocked_levels, kk)
             if level:
                 mode = level.lower()
                 print(mode)

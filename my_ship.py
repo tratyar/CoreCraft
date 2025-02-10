@@ -1,9 +1,9 @@
 import pygame.mouse
+
 xp = 0
 max_xp = 0
 
 xp_icon = pygame.image.load('media/sprite/xp.png')
-
 
 waypoint = ['Shot_gun', 'Machine_gun', 'Laser']
 canon = []
